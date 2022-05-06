@@ -6,6 +6,12 @@
 - make: 4.1
 - C++: 11
 
+## Module
+The web server contains three module
+- I/O: listen and accept the connection with client, read data from client and write data to client
+- Logic: Handle the business logic
+- Request Queue: The communication way among modules
+
 ## Resource
 - [make munnal](https://www.gnu.org/software/make/manual/make.pdf)
 - [webbench](http://home.tiscali.cz/~cz210552/webbench.html)

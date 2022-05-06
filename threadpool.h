@@ -35,13 +35,13 @@ private:
     // the max number of request.txt in request.txt queue
     int m_max_requests;
 
-    // the request.txt queue
+    // the request queue
     std::list<T *> m_work_queue;
 
     // the locker of request.txt queue
     locker m_queue_locker;
 
-    // request.txt to be handler
+    // request to be handler
     sem m_queue_stat;
 
     // the flag of whether stop thread
@@ -96,7 +96,8 @@ bool threadPool<T>::append(T *request) {
 
     m_work_queue.push_back(request);
     m_queue_locker.unlock();
-    // core add the semaphore of request.txt to be handler
+    // core add the semaphore of request to be handler
+    // notify
     m_queue_stat.post();
     return true;
 }

@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     int port = atoi(argv[1]);
 
     // 2 add signal action
-    // TODO why need to add signal action
+    // 为了避免进程退出, 可以捕获SIGPIPE信号, 或者忽略它, 给它设置SIG_IGN信号处理函数
     addSig(SIGPIPE, SIG_IGN);
 
     // 3 create threadPool
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
         perror("bind");
         exit(-1);
     }
-    // TODO why set 5
+
     ret = listen(listen_fd, 5);
     if (ret == -1) {
         perror("listen");
@@ -81,7 +81,6 @@ int main(int argc, char *argv[]) {
 
     while (true) {
         int num = epoll_wait(epoll_fd, events, MAX_EVENT_NUMBER, -1);
-        // TODO what is EINTR
         if (num < 0 && errno != EINTR) {
             perror("epoll_wait");
             break;
@@ -107,9 +106,11 @@ int main(int argc, char *argv[]) {
                     close(conn_fd);
                     continue;
                 }
-                // TODO what is the range of return value
                 // core create a new http_conn
                 users[conn_fd].init(conn_fd, client_address);
+                // EPOLLHUP：表示对应的文件描述符被挂断
+                // EPOLLERR：表示对应的文件描述符发生错误
+                // 2.6.17 版本内核中增加了 EPOLLRDHUP 事件，代表对端断开连接
             } else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
                 // 7.2 handle the accept socket
                 // core remember to close the fd

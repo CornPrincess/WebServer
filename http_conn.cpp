@@ -71,7 +71,6 @@ bool http_conn::read() {
         if (bytes_read == -1) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 // it means no data
-                // TODO why not return false
                 break;
             }
             return false;
@@ -100,7 +99,9 @@ bool http_conn::write() {
     }
 
     while (true) {
-        // TODO learn writev
+        // core readv 分散读， writev可以将多块分散的内存以并写入文件描述符中，即集中写。
+        // core http应答，包括一个状态行，多个头部字段，1个空行和文档的内容，其中前3部分内容可能被Web服务器
+        // core 放到一块内存中，而文档的内容通常被读入到另外一块单独的内存中（通过read函数或mmap函数）
         temp = writev(m_sock_fd, m_iv, m_iv_count);
         // 如果TCP写缓冲没有空间，则等待下一轮EPOLLOUT事件，虽然在此期间，
         // 服务器无法立即接收到同一客户的下一个请求，但可以保证连接的完整性。
@@ -156,7 +157,6 @@ void http_conn::process() {
     if (!write_ret) {
         close_conn();
     }
-    // TODO why do this
     modifyFd(m_epoll_fd, m_sock_fd, EPOLLOUT);
 }
 
@@ -195,7 +195,6 @@ http_conn::HTTP_CODE http_conn::process_read() {
                 if (http_code == GET_REQUEST) {
                     return do_get_request();
                 }
-                // TODO why
                 line_state = LINE_OPEN;
                 break;
             }
